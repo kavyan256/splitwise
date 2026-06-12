@@ -1,0 +1,5 @@
+site_name: splitwise
+site_description: A Node.js and Express-based expense sharing application that helps users track group expenses, split bills, and manage balances between friends.
+docs_dir: docs
+plugins:
+  - techdocs-core

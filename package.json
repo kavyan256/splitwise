@@ -1,0 +1,16 @@
+{
+  "name": "splitwise",
+  "version": "1.0.0",
+  "description": "A Node.js and Express-based expense sharing application that helps users track group expenses, split bills, and manage balances between friends.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}

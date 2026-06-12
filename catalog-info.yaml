@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: splitwise
+  description: A Node.js and Express-based expense sharing application that helps users track group expenses, split bills, and manage balances between friends.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - nodejs
+    - express
+spec:
+  type: service
+  lifecycle: experimental
+  owner: user:kavyan256
