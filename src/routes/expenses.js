@@ -3,6 +3,7 @@ const router = express.Router()
 const authenticate = require('../middleware/auth')
 const { db } = require('../config/db')
 const { calculateSplits } = require('../utils/splits')
+const { redis } = require('../config/redis')
 
 //create a new expense
 router.post('/', authenticate, async (req, res) => {
@@ -62,6 +63,8 @@ router.post('/', authenticate, async (req, res) => {
 
             return newExpense
         })
+
+        await redis.publish(`group:${groupId}`, JSON.stringify({ type: 'expense_added', expense, groupId }))
 
         res.status(201).json({ message: 'Expense created successfully', expense })
     } catch (error) {

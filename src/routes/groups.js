@@ -3,6 +3,7 @@ const router = express.Router()
 const authenticate = require('../middleware/auth')
 const { db } = require('../config/db')
 const { calculateNetBalances, simplifyDebts } = require('../utils/debts')
+const { subscriber } = require('../config/redis')
 
 //list of routes
 //1. POST / - create a new group
@@ -10,9 +11,9 @@ const { calculateNetBalances, simplifyDebts } = require('../utils/debts')
 //3. GET /:id/net-balances - get net balances and settlements for the group
 //4. GET /:id/settlements - get all settlements for the group
 //5. POST /:id/settlements - create a settlement for the group
-//6. GET /:id - get group details along with members and expenses and settlements
-//7. POST /:id/members - add a member to the group
-
+//6. GET /:id/events - get group events (expenses and settlements) in chronological order
+//7. GET /:id - get group details along with members and expenses and settlements
+//8. POST /:id/members - add a member to the group
 
 //create a new group
 router.post('/', authenticate, async (req, res) => {
@@ -176,6 +177,37 @@ router.post('/:id/settlements', authenticate, async (req, res) => {
         console.error(error)
         res.status(500).json({ error: 'Internal server error' })
     }
+})
+
+//get group events (expenses and settlements) in chronological order
+router.get('/:id/events', authenticate, async (req,res) => {
+    const groupId = req.params.id
+
+    //SSE headers
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+
+    //subscribe to the group's channel
+    subscriber.subscribe(`group:${groupId}`, (err, count) => {
+        if (err) {
+            console.error('Failed to subscribe: ', err)
+            res.status(500).json({ error: 'Internal server error' })
+        } else {
+            console.log(`Subscribed successfully! This client is currently subscribed to ${count} channels.`)
+        }
+    })
+
+    subscriber.on('message', (channel, message) => {
+        if (channel === `group:${groupId}`) {
+            res.write(`data: ${message}\n\n`)
+        }
+    })
+
+    req.on('close', () => {
+        console.log('Client disconnected')
+        subscriber.unsubscribe(`group:${groupId}`)
+    })    
 })
 
 //get group details
