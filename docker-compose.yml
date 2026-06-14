@@ -1,0 +1,39 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://kavyan2:password123@postgres:5432/splitwise
+      - JWT_SECRET=Password@256
+      - REDIS_HOST=miniredis
+      - REDIS_PORT=6379
+      - NODE_ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      miniredis:
+        condition: service_started
+    command: sh -c "NODE_ENV=production npx knex migrate:latest --env production && node src/index.js"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=kavyan2
+      - POSTGRES_PASSWORD=password123
+      - POSTGRES_DB=splitwise
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kavyan2 -d splitwise"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  miniredis:
+    image: miniredis:latest
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
